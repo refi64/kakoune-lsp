@@ -146,7 +146,11 @@ pub fn start(
                     ServerMessage::Response(output) => {
                         match output {
                             Output::Success(success) => {
-                                if let Some((meta, _, batch_id)) = ctx.response_waitlist.remove(&success.id) {
+                                if let Some((meta, method, batch_id, canceled)) = ctx.response_waitlist.remove(&success.id) {
+                                    if canceled {
+                                        continue;
+                                    }
+                                    remove_outstanding_request(&mut ctx, method, meta.buffile.clone(), meta.client.clone(), &success.id);
                                     if meta.write_response_to_fifo {
                                         write_response_to_fifo(meta, &success);
                                         continue;
@@ -164,9 +168,13 @@ pub fn start(
                                 }
                             }
                             Output::Failure(failure) => {
-                                error!("Error response from server: {:?}", failure);
                                 if let Some(request) = ctx.response_waitlist.remove(&failure.id) {
-                                    let (meta, method, _) = request;
+                                    let (meta, method, _, canceled) = request;
+                                    if canceled {
+                                        continue;
+                                    }
+                                    remove_outstanding_request(&mut ctx, method, meta.buffile.clone(), meta.client.clone(), &failure.id);
+                                    error!("Error response from server: {:?}", failure);
                                     if meta.write_response_to_fifo {
                                         write_response_to_fifo(meta, failure);
                                         continue;
@@ -192,6 +200,7 @@ pub fn start(
                                         }
                                     }
                                 } else {
+                                    error!("Error response from server: {:?}", failure);
                                     error!("Id {:?} is not in waitlist!", failure.id);
                                 }
                             }
