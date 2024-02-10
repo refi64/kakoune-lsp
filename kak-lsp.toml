@@ -271,12 +271,22 @@ roots = ["spago.dhall", "spago.yaml", "package.json", ".git", ".hg"]
 command = "purescript-language-server"
 args = ["--stdio"]
 
-[language_server.pylsp]
+[language_server.pylsp_main]
 filetypes = ["python"]
 roots = ["requirements.txt", "setup.py", ".git", ".hg"]
 command = "pylsp"
 settings_section = "_"
-[language_server.pylsp.settings._]
+[language_server.pylsp_main.settings._]
+# See https://github.com/python-lsp/python-lsp-server#configuration
+# pylsp.configurationSources = ["flake8"]
+pylsp.plugins.jedi_completion.include_params = true
+
+[language_server.pylsp_test]
+filetypes = ["python"]
+roots = ["requirements.txt", "setup.py", ".git", ".hg"]
+command = "pylsp" # TODO different path
+settings_section = "_"
+[language_server.pylsp_test.settings._]
 # See https://github.com/python-lsp/python-lsp-server#configuration
 # pylsp.configurationSources = ["flake8"]
 pylsp.plugins.jedi_completion.include_params = true

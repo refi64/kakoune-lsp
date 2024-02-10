@@ -13,6 +13,7 @@ use lsp_types::request::Request;
 use lsp_types::*;
 use regex::Regex;
 use std::collections::HashMap;
+use std::env;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -107,9 +108,22 @@ pub fn start(
                     continue 'event_loop;
                 }
 
+
+            let maybe_server_filter = env::var("KAK_LSP_LANGUAGE_SERVER").ok();
+
                 let (language_id, servers) = cfg.unwrap();
                 let routes: Vec<_> = servers
                     .iter()
+                    .filter(
+                        |&server_name| {
+                            let Some(allowed) = maybe_server_filter.as_ref() else {return true; };
+                            if server_name != allowed {
+                                debug!("Not starting server {server_name} due to KAK_LSP_LANGUAGE_SERVER={allowed}");
+                                return false;
+                            }
+                            true
+                        }
+                    )
                     .map(|server_name| {
                         let language  = &languages[server_name];
                         let root = find_project_root(language_id, &language.roots, &request.meta.buffile);
