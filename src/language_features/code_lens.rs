@@ -180,11 +180,11 @@ fn perform_code_lens(meta: EditorMeta, lenses: &[(ServerName, CodeLens)], ctx: &
             .filter(|(_, lens)| lens.command.is_some())
             .map(|(_, lens)| {
                 let command = lens.command.as_ref().unwrap();
-                format!(
-                    "{} {}",
-                    &editor_quote(&command.title),
-                    &editor_quote(&execute_command_editor_command(command, false)),
-                )
+                editor_quote(&format!(
+                    "{}\t{}",
+                    &command.title,
+                    &execute_command_editor_command(command, false),
+                ))
             })
             .join(" "),
     );

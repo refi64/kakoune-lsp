@@ -42,7 +42,7 @@ pub fn text_document_range_formatting(meta: EditorMeta, params: EditorParams, ct
                     "lsp-range-formatting"
                 };
                 let cmd = format!("{} {}", cmd, server_name);
-                format!("{} {}", editor_quote(server_name), editor_quote(&cmd))
+                editor_quote(&format!("{}\t{}", server_name, &cmd))
             })
             .join(" ");
         ctx.exec(meta, format!("lsp-menu {}", choices));
